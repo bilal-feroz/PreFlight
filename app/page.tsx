@@ -87,15 +87,23 @@ export default function Home() {
         }
         setEvents((prev) => [...prev, e]);
       });
-      streamEvents("/api/preflight", { brief: trimmed }, (e) => paced.push(e), ac.signal)
+      let sawFinal = false;
+      streamEvents(
+        "/api/preflight",
+        { brief: trimmed },
+        (e) => {
+          if (e.type === "result" || e.type === "error") sawFinal = true;
+          paced.push(e);
+        },
+        ac.signal,
+      )
         .then(() => {
-          // stream ended; resolve happens when the paced queue reaches result/error
-          setTimeout(() => {
-            if (!final && !failed) {
-              failed = "The connection closed before the analysis finished.";
-              resolve();
-            }
-          }, 8000);
+          // the paced queue delivers result/error on its own; only a stream that ended without one is a failure
+          if (!sawFinal) {
+            paced.cancel();
+            failed = "The connection closed before the analysis finished.";
+            resolve();
+          }
         })
         .catch((e: unknown) => {
           if (ac.signal.aborted) return;
@@ -136,11 +144,16 @@ export default function Home() {
         }
         setReroute((s) => ({ ...s, events: [...s.events, e] }));
       }, 360);
+      let sawFinal = false;
       try {
-        await streamEvents("/api/reroute", { runId: result.runId, territoryId }, (e) => paced.push(e));
-        setTimeout(() => {
-          if (!done) setReroute((s) => (s.status === "running" ? { ...s, status: "error", error: "The connection closed early." } : s));
-        }, 8000);
+        await streamEvents("/api/reroute", { runId: result.runId, territoryId }, (e) => {
+          if (e.type === "reroute" || e.type === "error") sawFinal = true;
+          paced.push(e);
+        });
+        if (!sawFinal && !done) {
+          paced.cancel();
+          setReroute((s) => (s.status === "running" ? { ...s, status: "error", error: "The connection closed early." } : s));
+        }
       } catch (e) {
         paced.cancel();
         setReroute((s) => ({ ...s, status: "error", error: e instanceof Error ? e.message : "Reroute failed" }));

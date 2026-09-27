@@ -53,7 +53,8 @@ export function pacedEmitter(onEvent: (e: ProgressEvent) => void, gapMs = 420) {
     last = Date.now();
     if (queue.length) {
       const next = queue[0];
-      const gap = next.type === "progress" ? 45 : next.type === "result" || next.type === "reroute" ? gapMs * 2 : gapMs;
+      const hidden = typeof document !== "undefined" && document.hidden;
+      const gap = hidden ? 0 : next.type === "progress" ? 45 : next.type === "result" || next.type === "reroute" ? gapMs * 2 : gapMs;
       timer = setTimeout(pump, gap);
     }
   };

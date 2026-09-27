@@ -79,17 +79,25 @@ Preflight answers those questions in minutes, with real videos as proof.
 ## Under the hood
 
 ```mermaid
-flowchart LR
-    idea["Your idea"] --> dna["Creative Constellation<br/>hook · format · story · product"]
-    dna --> oriane["Oriane search<br/>speech · visuals · captions<br/>Arabic · UAE-context"]
-    oriane --> read["Read + compare<br/>every video on 6 dimensions"]
-    read --> math["Scores in code<br/>crowding · lifecycle · market"]
-    math --> out["Creative Position<br/>Collisions · Airspace"]
-    out --> gap["Open Territory"]
-    gap --> reroute["Reroute"]
-    reroute -. "same videos, scored again" .-> read
+flowchart TB
+    subgraph row1 [" "]
+        direction LR
+        idea["<b>Your idea</b>"] --> dna["<b>Creative Constellation</b><br/>hook · format · story · product"]
+        dna --> oriane["<b>Oriane search</b><br/>speech · visuals · captions<br/>Arabic · UAE-context"]
+        oriane --> read["<b>Read + compare</b><br/>every video on 6 dimensions"]
+    end
+    subgraph row2 [" "]
+        direction LR
+        math["<b>Scores in code</b><br/>crowding · lifecycle · market"] --> out["<b>Creative Position</b><br/>Collisions · Airspace"]
+        out --> gap["<b>Open Territory</b><br/>where there's room"]
+        gap --> reroute["<b>Reroute</b><br/>rewrite + score again"]
+    end
+    read --> math
+    reroute -. "same videos" .-> read
     classDef gold fill:#14100a,stroke:#FFB547,color:#FFD27A;
     class idea,dna,oriane,read,math,out,gap,reroute gold;
+    style row1 fill:none,stroke:none
+    style row2 fill:none,stroke:none
 ```
 
 - **Oriane** is the perception layer: it searches what people **say** (transcripts), what's **seen** (AI Vision on frames) and what's **written** (captions, hashtags), plus language and location.

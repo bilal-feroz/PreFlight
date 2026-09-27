@@ -69,7 +69,7 @@ npm run dev                     # http://localhost:3000 (bound to 0.0.0.0)
 
 | Env var | Purpose |
 | --- | --- |
-| `ORIANE_API_KEY` | Oriane Integration connect API key |
+| `ORIANE_API_KEY` | Oriane Integration connect API key; several comma-separated keys are allowed, the next one takes over when a key runs out of credits |
 | `ORIANE_BASE_URL` | defaults to `https://connect.oriane.xyz` |
 | `ORIANE_MAX_CALLS_PER_RUN` | budget guard for uncached Oriane calls per run (default 40) |
 | `LLM_PROVIDER` | `groq` (default), `gemini`, `anthropic` or `openai` |

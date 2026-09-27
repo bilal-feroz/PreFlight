@@ -186,20 +186,29 @@ function createLimiter(max: number) {
 
 const limit = createLimiter(3);
 
+/** ORIANE_API_KEY may hold several comma-separated keys: the next one is used when a key runs out of credits. */
+function orianeKeys(): string[] {
+  return (process.env.ORIANE_API_KEY ?? "").split(",").map((k) => k.trim()).filter(Boolean);
+}
+
+let activeKey = 0;
+
 async function orianeFetch(path: string, body: unknown, budget?: OrianeBudget): Promise<unknown> {
-  const key = process.env.ORIANE_API_KEY;
-  if (isOffline() || !key) throw new OfflineCacheMissError(`Oriane ${path}`);
+  const keys = orianeKeys();
+  if (isOffline() || !keys.length) throw new OfflineCacheMissError(`Oriane ${path}`);
   if (budget) {
     if (budget.calls >= budget.maxCalls) throw new BudgetExceededError(budget.maxCalls);
     budget.calls++;
   }
   return limit(async () => {
     let lastErr: unknown;
-    for (let attempt = 0; attempt < 2; attempt++) {
+    let serverErrors = 0;
+    while (serverErrors < 2) {
+      const keyIndex = Math.min(activeKey, keys.length - 1);
       try {
         const res = await fetch(`${BASE_URL}${path}`, {
           method: "POST",
-          headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+          headers: { Authorization: `Bearer ${keys[keyIndex]}`, "Content-Type": "application/json" },
           body: JSON.stringify(body),
           signal: AbortSignal.timeout(120_000),
         });
@@ -212,12 +221,19 @@ async function orianeFetch(path: string, body: unknown, budget?: OrianeBudget): 
           res.status,
           json?.error?.code,
         );
-        if (res.status < 500) throw err; // 4xx: don't retry
+        // out of credits (402) or key rejected: move to the next key and retry
+        if ([401, 402, 403].includes(res.status) && keyIndex < keys.length - 1) {
+          activeKey = Math.max(activeKey, keyIndex + 1);
+          console.warn(`[oriane] key ${keyIndex + 1} returned ${res.status}; switching to key ${keyIndex + 2}`);
+          continue;
+        }
+        if (res.status < 500) throw err; // other 4xx: don't retry
         lastErr = err;
       } catch (e) {
         if (e instanceof OrianeError && (e.status ?? 500) < 500) throw e;
         lastErr = e;
       }
+      serverErrors++;
       await new Promise((r) => setTimeout(r, 1500));
     }
     throw lastErr;

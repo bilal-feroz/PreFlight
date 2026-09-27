@@ -30,8 +30,8 @@ export function DnaChips({ dna }: DnaChipsProps) {
   ].filter((r) => r.items.length > 0);
 
   return (
-    <motion.section aria-label="Creative DNA" variants={rise} initial="hidden" animate="show">
-      <SectionTitle>Creative DNA</SectionTitle>
+    <motion.section aria-label="Creative Constellation" variants={rise} initial="hidden" animate="show">
+      <SectionTitle>Creative Constellation</SectionTitle>
       <GlassPanel className="p-4 sm:p-5">
         <dl className="grid grid-cols-[64px_minmax(0,1fr)] gap-x-4 gap-y-3 sm:grid-cols-[80px_minmax(0,1fr)]">
           {rows.map((r) => (

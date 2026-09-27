@@ -12,7 +12,7 @@ export type HowItWorksProps = {
 
 const PIPELINE: { step: string; note: string }[] = [
   { step: "CAMPAIGN", note: "Your idea, in plain words" },
-  { step: "CREATIVE DNA", note: "Hook, format, narrative, visual, topic, product" },
+  { step: "CREATIVE CONSTELLATION", note: "The stars of your idea: hook, format, narrative, visual, topic, product" },
   { step: "ORIANE", note: "Real Instagram and TikTok videos, searched by speech, captions and visuals" },
   { step: "CREATIVE POSITION", note: "Crowding, lifecycle, market, confidence" },
   { step: "COLLISIONS", note: "The closest real videos, with evidence" },

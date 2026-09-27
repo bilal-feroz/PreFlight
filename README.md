@@ -7,11 +7,11 @@ Built at the Oriane x Replit "Build for the Video Economy" hackathon, Dubai.
 Brands and agencies approve creator campaigns on gut feeling. Nobody checks whether the idea has already been posted hundreds of times, whether the format is rising or declining, or whether it's crowded globally but still open locally. Preflight does, against real Instagram and TikTok videos indexed by [Oriane](https://www.oriane.xyz).
 
 ```
-CAMPAIGN -> CREATIVE DNA -> ORIANE -> CREATIVE POSITION -> COLLISIONS
+CAMPAIGN -> CREATIVE CONSTELLATION -> ORIANE -> CREATIVE POSITION -> COLLISIONS
 -> CREATIVE AIRSPACE -> OPEN TERRITORY -> REROUTE -> PREFLIGHT AGAIN
 ```
 
-1. **Creative DNA**: what the idea is made of (hook, format, narrative arc, visual motifs, product interaction, tone, location, CTA).
+1. **Creative Constellation**: the stars the idea is made of (hook, format, narrative arc, visual motifs, product interaction, tone, location, CTA).
 2. **Creative Position**: one card with Crowding, Lifecycle, Market and Confidence.
 3. **Collisions**: the real videos that prove it, with the transcript line and timestamp.
 4. **Creative Airspace**: a 3D galaxy of the analyzed videos, so you see where the idea sits.
@@ -27,11 +27,11 @@ Browser (Next.js App Router, React Three Fiber galaxy)
    │  GET  /api/thumb/:id              ← cached, downscaled thumbnail proxy
    ▼
 lib/pipeline.ts
-   1. Creative DNA + search probes ── lib/llm.ts (structure only, Zod-validated, cached)
+   1. Creative Constellation + probes ─ lib/llm.ts (structure only, Zod-validated, cached)
    2. Probes → Oriane ─────────────── lib/oriane.ts (AI Vision text assets + phrase search,
    │                                   topic / Arabic / UAE-context guards, concurrency 3,
    │                                   per-run call budget, disk cache)
-   3. Video DNA, 15 videos per call ── cached per video id, reused forever
+   3. Video constellations, 15 per call ─ cached per video id, reused forever
    4. Concept vs video comparison ──── 6 dimensions per video, cached per concept × video
    5. Scoring in code ─────────────── lib/scoring.ts (crowding, saturation, confidence,
                                        lifecycle, market), lib/territory.ts, lib/layout.ts

@@ -55,7 +55,7 @@ export function Processing({ brief, dna, events, onHowItWorks }: ProcessingProps
       <div className="mx-auto w-full max-w-3xl flex-1 px-5 pb-20 pt-4 sm:px-8 sm:pt-8">
         <motion.div variants={stagger(0.1)} initial="hidden" animate="show">
           <motion.p variants={rise} className="label-caps text-gold [text-shadow:0_0_16px_rgb(255_181_71/0.35)]">
-            Creative DNA
+            Creative Constellation
           </motion.p>
           <motion.blockquote
             variants={rise}

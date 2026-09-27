@@ -158,6 +158,7 @@ export async function runPreflight(brief: string, emit: Emit): Promise<Preflight
     layoutItems(shown, dnas, matches),
     clusterStats(shown, dnas, rm),
     position.global.crowding.score >= CROWDED_AT,
+    dna.format,
   );
   await thumbs;
 
@@ -273,6 +274,7 @@ export async function runReroute(runId: string, territoryId: string, emit: Emit)
     galaxyVideos.map((v) => ({ id: v.id, format: dnas.get(v.id)?.format ?? "other", simAfter: mAfter.get(v.id)?.overall ?? 0 })),
     clusterStats(galaxyVideos, dnas, rm),
     state.airspace.crowded,
+    newDna.format,
   );
   await thumbs;
 

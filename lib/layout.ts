@@ -32,12 +32,23 @@ export function clusterCenters(labels: FormatLabel[], startIndex = 0): Map<Forma
   return out;
 }
 
-function starIn(centers: Map<FormatLabel, Vec3>, nodes: { format: FormatLabel; sim: number }[]): Vec3 {
-  const weight = new Map<FormatLabel, number>();
-  for (const n of nodes) weight.set(n.format, (weight.get(n.format) ?? 0) + n.sim ** 4);
+/** The star's home is the cluster holding its closest matches: mean of the top 5 similarities (clusters with >= 3 videos). */
+function starIn(centers: Map<FormatLabel, Vec3>, nodes: { format: FormatLabel; sim: number }[], ownFormat?: FormatLabel): Vec3 {
+  // the idea sits in its own format's cluster when that cluster exists
+  if (ownFormat && ownFormat !== "other" && centers.has(ownFormat)) {
+    const c = centers.get(ownFormat)!;
+    return [c[0] * 0.92, c[1] + 0.55, c[2] * 0.92];
+  }
+  const byCluster = new Map<FormatLabel, number[]>();
+  for (const n of nodes) byCluster.set(n.format, [...(byCluster.get(n.format) ?? []), n.sim]);
   let home: FormatLabel | undefined;
   let best = -1;
-  for (const [label, w] of weight) if (centers.has(label) && w > best) [home, best] = [label, w];
+  for (const [label, sims] of byCluster) {
+    if (!centers.has(label) || sims.length < 3) continue;
+    const top = [...sims].sort((a, b) => b - a).slice(0, 5);
+    const score = top.reduce((a, b) => a + b, 0) / top.length;
+    if (score > best) [home, best] = [label, score];
+  }
   const c = (home && centers.get(home)) ?? [0, 0, 0];
   return [c[0] * 0.92, c[1] + 0.55, c[2] * 0.92];
 }
@@ -74,12 +85,13 @@ export function layoutAirspace(
   items: LayoutInput[],
   clusterStats: Map<FormatLabel, { supply: number; response: number | null }>,
   crowded: boolean,
+  ownFormat?: FormatLabel,
 ): Airspace {
   const labels = [...clusterStats.keys()].sort(
     (a, b) => (clusterStats.get(b)!.supply - clusterStats.get(a)!.supply) || a.localeCompare(b),
   );
   const centers = clusterCenters(labels);
-  const star = starIn(centers, items);
+  const star = starIn(centers, items, ownFormat);
   const nodes: GalaxyNode[] = items.map((it) => {
     const c = centers.get(it.format) ?? [0, 0, 0];
     const supply = clusterStats.get(it.format)?.supply ?? 1;
@@ -105,11 +117,12 @@ export function extendAirspace(
   allAfter: { id: string; format: FormatLabel; simAfter: number }[],
   clusterStats: Map<FormatLabel, { supply: number; response: number | null }>,
   crowdedAfter: boolean,
+  afterFormat?: FormatLabel,
 ): Airspace {
   const centers = new Map(base.clusters.map((c) => [c.label, c.center] as [FormatLabel, Vec3]));
   const missing = [...new Set(newItems.map((n) => n.format))].filter((l) => !centers.has(l));
   for (const [l, c] of clusterCenters(missing, centers.size)) centers.set(l, c);
-  const starAfter = starIn(centers, allAfter.map((a) => ({ format: a.format, sim: a.simAfter })));
+  const starAfter = starIn(centers, allAfter.map((a) => ({ format: a.format, sim: a.simAfter })), afterFormat);
   const afterById = new Map(allAfter.map((a) => [a.id, a.simAfter]));
   const nodes: GalaxyNode[] = [
     ...base.nodes.map((n) => ({ ...n, simAfter: round(afterById.get(n.id) ?? 0) })),
@@ -124,7 +137,7 @@ export function extendAirspace(
         sim: round(it.sim),
         simAfter: round(simAfter),
         isNew: true,
-        p: roundV(placeNode(it.id, c, spread, starAfter, simAfter)),
+        p: roundV(placeNode(it.id, c, spread, base.star, it.sim)),
       };
     }),
   ];

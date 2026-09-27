@@ -20,6 +20,11 @@ export type ModelTier = "smart" | "batch" | "judge";
 
 const PROMPT_VERSION = 3;
 
+/** LLM_API_KEY may hold several comma-separated keys (separate accounts = separate quotas). */
+function apiKeys(): string[] {
+  return (process.env.LLM_API_KEY ?? "").split(",").map((k) => k.trim()).filter(Boolean);
+}
+
 function provider(): Provider {
   const p = (process.env.LLM_PROVIDER || "groq").toLowerCase();
   return (["groq", "openai", "gemini", "anthropic"].includes(p) ? p : "groq") as Provider;
@@ -70,7 +75,7 @@ let modelList: Promise<string[]> | undefined;
 
 async function listModels(): Promise<string[]> {
   const p = provider();
-  const key = process.env.LLM_API_KEY!;
+  const key = apiKeys()[0];
   const headers: Record<string, string> =
     p === "anthropic" ? { "x-api-key": key, "anthropic-version": "2023-06-01" } : { Authorization: `Bearer ${key}` };
   const res = await fetch(ENDPOINTS[p].models, { headers, signal: AbortSignal.timeout(20_000) });
@@ -177,16 +182,19 @@ function release(id: string) {
 }
 
 class RateLimited extends Error {}
+/** daily quota exhausted for this model: retrying for minutes won't help */
+class QuotaExhausted extends Error {}
 
 async function callModel(
-  model: string,
+  slot: string,
   system: string,
   user: string,
   maxTokens: number,
 ): Promise<string> {
   const p = provider();
-  const key = process.env.LLM_API_KEY!;
-  const s = stateOf(model);
+  const [model, keyIndex] = slot.split("#");
+  const key = apiKeys()[Number(keyIndex ?? 0)] ?? apiKeys()[0];
+  const s = stateOf(slot);
   let body: Record<string, unknown>;
   let headers: Record<string, string>;
   if (p === "anthropic") {
@@ -245,6 +253,11 @@ async function callModel(
   }
   if (res.status === 429 || res.status === 503 || res.status === 529) {
     const wait = parseDuration(res.headers.get("retry-after")) ?? reset ?? 8_000;
+    const body429 = await res.text().catch(() => "");
+    if (/per day|TPD|RPD|daily/i.test(body429) || wait > 120_000) {
+      s.blockedUntil = Date.now() + Math.max(wait, 5 * 60_000);
+      throw new QuotaExhausted(`LLM ${model} daily quota reached`);
+    }
     s.blockedUntil = Date.now() + Math.min(wait, 65_000) + 250;
     throw new RateLimited(`LLM ${model} rate limited`);
   }
@@ -309,7 +322,7 @@ export type LlmJsonArgs<T> = {
 };
 
 export function llmAvailable(): boolean {
-  return !isOffline() && Boolean(process.env.LLM_API_KEY);
+  return !isOffline() && apiKeys().length > 0;
 }
 
 /** JSON-returning LLM call, Zod-validated, one repair retry, disk-cached. */
@@ -335,7 +348,9 @@ async function generate<T>({
   tier: ModelTier;
   maxTokens: number;
 }): Promise<T> {
-  const pool = await modelsFor(tier);
+  const models = await modelsFor(tier);
+  // one scheduling slot per (model, key): each key is a separate quota
+  const pool = models.flatMap((m) => apiKeys().map((_, k) => `${m}#${k}`));
   const est = Math.ceil((system.length + user.length) / 3.4) + Math.ceil(maxTokens * 0.8);
   let lastError: unknown;
   let repairNote = "";
@@ -358,6 +373,11 @@ async function generate<T>({
       }
     } catch (e) {
       lastError = e;
+      if (e instanceof QuotaExhausted) {
+        // every model in the pool out of quota for today: stop now
+        if (pool.every((id) => stateOf(id).blockedUntil - Date.now() > 120_000)) throw e;
+        continue;
+      }
       if (!(e instanceof RateLimited)) {
         if (repairs >= 1 && e instanceof z.ZodError) throw e;
         if (++failures > 2) throw e;

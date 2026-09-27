@@ -43,7 +43,7 @@ Reroute only runs new probes for the rewritten idea, merges them into the same p
 
 ## Scoring (all constants in `lib/config.ts`)
 
-- **Overall similarity** = 0.25 hook + 0.20 narrative + 0.20 visual + 0.15 format + 0.10 topic + 0.10 product (dimension ratings 0..1 come from the comparison step; the weighted sum is computed in code)
+- **Overall similarity** = 0.25 hook + 0.20 narrative + 0.20 visual + 0.15 format + 0.10 topic + 0.10 product. The comparison step grades each dimension A–E (same move · close · related · loose · different); code maps grades to 0.95 · 0.78 · 0.60 · 0.35 · 0.05 and computes the weighted sum
 - **Crowding** (0–100) = round(100 × (0.5 × min(1, exact/8) + 0.3 × min(1, close/20) + 0.2 × min(1, medium/40))), with exact = overall ≥ 0.85, close = 0.70–0.85, medium = 0.55–0.70
 - **Dimension saturation** = among relevant videos (overall ≥ 0.4), the share with that dimension ≥ 0.7
 - **Insight sentence** = templated from the most and least saturated dimensions
@@ -73,7 +73,7 @@ npm run dev                     # http://localhost:3000 (bound to 0.0.0.0)
 | `ORIANE_BASE_URL` | defaults to `https://connect.oriane.xyz` |
 | `ORIANE_MAX_CALLS_PER_RUN` | budget guard for uncached Oriane calls per run (default 40) |
 | `LLM_PROVIDER` | `groq` (default), `gemini`, `anthropic` or `openai` |
-| `LLM_API_KEY` | key for that provider |
+| `LLM_API_KEY` | key for that provider; several comma-separated keys are pooled (each account has its own rate limits) |
 | `LLM_MODEL` | optional; otherwise models are picked from the provider's live model list |
 | `PREFLIGHT_OFFLINE` | `1` = serve from the disk cache only (stage demo with Wi-Fi off) |
 | `PREFLIGHT_POOL_MAX` | videos per analysis (default 200) |

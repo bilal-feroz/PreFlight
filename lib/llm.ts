@@ -219,7 +219,7 @@ async function callModel(
       method: "POST",
       headers,
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(120_000),
+      signal: AbortSignal.timeout(45_000),
     });
 
   let res = await send(body);

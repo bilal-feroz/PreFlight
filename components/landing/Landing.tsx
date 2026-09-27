@@ -103,15 +103,15 @@ export function Landing({
                 <span className="hidden font-mono text-[11px] text-cluster/30 sm:block">Ctrl / &#8984; + Enter</span>
                 <div className="flex w-full gap-2 sm:w-auto">
                   <Button variant="ghost" onClick={loadDemo} disabled={busy} className="flex-1 sm:flex-none">
-                    Load demo
+                    Try an example
                   </Button>
                   <Button variant="primary" type="submit" disabled={!canRun} className="flex-1 sm:flex-none">
                     {busy ? (
                       <>
-                        <Spinner /> Running
+                        <Spinner /> Checking
                       </>
                     ) : (
-                      "Run Preflight"
+                      "Check my idea"
                     )}
                   </Button>
                 </div>

@@ -257,6 +257,7 @@ export default function Home() {
                 />
                 {conceptPreview && (
                   <ConceptPreviewButton
+                    exact={conceptPreview.exact}
                     onClick={() => {
                       setPreviewNonce((n) => n + 1);
                       setPreviewOpen(true);

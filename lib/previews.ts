@@ -1,6 +1,7 @@
 /**
- * Concept preview videos made with Replit Animation for specific rerouted ideas.
- * A preview is only offered for the exact run + territory it was made for.
+ * Concept preview videos made with Replit Animation.
+ * A preview is offered after a reroute of the idea it was made for; `exact`
+ * says whether the reroute is the one the video depicts (captions differ).
  */
 export type ConceptPreview = {
   runId: string;
@@ -19,7 +20,12 @@ export const CONCEPT_PREVIEWS: ConceptPreview[] = [
   },
 ];
 
-export function previewFor(runId: string | undefined, territoryId: string | null | undefined): ConceptPreview | undefined {
-  if (!runId || !territoryId) return undefined;
-  return CONCEPT_PREVIEWS.find((p) => p.runId === runId && p.territoryId === territoryId);
+export type PreviewMatch = ConceptPreview & { exact: boolean };
+
+export function previewFor(runId: string | undefined, territoryId: string | null | undefined): PreviewMatch | undefined {
+  if (!runId) return undefined;
+  const exact = CONCEPT_PREVIEWS.find((p) => p.runId === runId && p.territoryId === territoryId);
+  if (exact) return { ...exact, exact: true };
+  const sameIdea = CONCEPT_PREVIEWS.find((p) => p.runId === runId);
+  return sameIdea ? { ...sameIdea, exact: false } : undefined;
 }

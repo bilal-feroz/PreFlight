@@ -2,10 +2,10 @@
 
 import { useEffect, type SyntheticEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { ConceptPreview } from "@/lib/previews";
+import type { PreviewMatch } from "@/lib/previews";
 import { Button } from "@/components/ui/Button";
 
-export function ConceptPreviewButton({ onClick }: { onClick(): void }) {
+export function ConceptPreviewButton({ onClick, exact = true }: { onClick(): void; exact?: boolean }) {
   return (
     <div className="mt-4 flex flex-col items-start gap-1.5">
       <Button variant="outline" onClick={onClick}>
@@ -14,7 +14,11 @@ export function ConceptPreviewButton({ onClick }: { onClick(): void }) {
         </svg>
         Get Replit visual example
       </Button>
-      <span className="text-[11px] text-cluster/40">Animated concept preview of the rerouted idea, made with Replit.</span>
+      <span className="text-[11px] text-cluster/40">
+        {exact
+          ? "Animated concept preview of the rerouted idea, made with Replit."
+          : "Example animated concept preview for an oud reroute, made with Replit."}
+      </span>
     </div>
   );
 }
@@ -35,7 +39,7 @@ export function ConceptPreviewModal({
   onClose,
   nonce = 0,
 }: {
-  preview: ConceptPreview | undefined;
+  preview: PreviewMatch | undefined;
   open: boolean;
   onClose(): void;
   /** changes on every open so each open gets a fresh player that starts from 0:00 */
@@ -93,7 +97,9 @@ export function ConceptPreviewModal({
               className="aspect-[9/16] max-h-[70vh] w-full rounded-xl bg-black object-cover"
             />
             <p className="px-1 pb-1 text-[11px] text-cluster/45">
-              Concept preview made with Replit Animation for this rerouted idea. Illustrative, not real footage.
+              {preview.exact
+                ? "Concept preview made with Replit Animation for this rerouted idea. Illustrative, not real footage."
+                : "Example concept preview made with Replit Animation for an Arabic-first oud reroute. Illustrative, not real footage."}
             </p>
           </motion.div>
         </motion.div>

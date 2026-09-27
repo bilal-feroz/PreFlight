@@ -37,11 +37,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
+    // browser extensions inject attributes on <html>/<body> before hydration
     <html
       lang="en"
       className={`${serif.variable} ${inter.variable} ${mono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-dvh bg-void font-sans text-cluster/70">
+      <body className="min-h-dvh bg-void font-sans text-cluster/70" suppressHydrationWarning>
         <MotionRoot>{children}</MotionRoot>
       </body>
     </html>

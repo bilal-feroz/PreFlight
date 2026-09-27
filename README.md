@@ -18,6 +18,11 @@ CAMPAIGN -> CREATIVE CONSTELLATION -> ORIANE -> CREATIVE POSITION -> COLLISIONS
 5. **Open Territory**: where the data shows room (a less crowded format, or a less crowded market).
 6. **Reroute**: rewrite the idea toward that territory, score it again on the same videos, watch the star move.
 
+## Demo
+
+- Try the example idea on the landing page (**Try an example**), then **Reroute here** on the Arabic-first territory and **Get Replit visual example** for the animated concept preview.
+- 2-minute demo video: [script, shot list and voice-over](docs/demo-video-script.md) · [subtitles (.srt)](docs/demo-video.srt)
+
 ## Architecture
 
 ```

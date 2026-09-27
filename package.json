@@ -8,7 +8,10 @@
     "start": "next start -H 0.0.0.0 -p 3000",
     "lint": "eslint",
     "probe": "tsx scripts/probe-oriane.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "preflight": "tsx scripts/run-preflight.ts",
+    "cache:pack": "tar -czf data/demo-cache.tar.gz -C data cache",
+    "cache:unpack": "tar -xzf data/demo-cache.tar.gz -C data"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
@@ -20,6 +23,7 @@
     "postprocessing": "^6.39.5",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "sharp": "^0.35.4",
     "three": "^0.186.1",
     "zod": "^4.6.5"
   },

@@ -6,6 +6,7 @@ import Airspace from "@/components/airspace/Airspace";
 import { Landing } from "@/components/landing/Landing";
 import { Processing } from "@/components/processing/Processing";
 import { Collisions } from "@/components/results/Collisions";
+import { ConceptPreviewButton, ConceptPreviewModal } from "@/components/results/ConceptPreview";
 import { DnaChips } from "@/components/results/DnaChips";
 import { EvidenceDrawer } from "@/components/results/EvidenceDrawer";
 import { HowItWorks } from "@/components/results/HowItWorks";
@@ -17,6 +18,7 @@ import { ResultsLayout } from "@/components/results/ResultsLayout";
 import { Header } from "@/components/ui/Header";
 import { pacedEmitter, streamEvents } from "@/lib/client-stream";
 import { DEMO_BRIEF } from "@/lib/demo";
+import { previewFor } from "@/lib/previews";
 import type { MarketKey, PreflightResult, ProgressEvent, RerouteResult, VideoCard } from "@/lib/result-types";
 import type { CreativeDNA } from "@/lib/types";
 
@@ -43,6 +45,9 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [howOpen, setHowOpen] = useState(false);
   const [reroute, setReroute] = useState<RerouteState>(IDLE_REROUTE);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewNonce, setPreviewNonce] = useState(0);
+  const closePreview = useCallback(() => setPreviewOpen(false), []);
   const abortRef = useRef<AbortController | null>(null);
   const rerouteRef = useRef<HTMLDivElement | null>(null);
 
@@ -114,6 +119,7 @@ export default function Home() {
     async (territoryId: string) => {
       if (!result) return;
       setReroute({ status: "running", events: [], result: null, territoryId, error: null });
+      setPreviewOpen(false);
       requestAnimationFrame(() => rerouteRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
       let done = false;
       const paced = pacedEmitter((e) => {
@@ -149,6 +155,8 @@ export default function Home() {
   );
 
   const galaxy = reroute.result?.airspace ?? result?.airspace ?? null;
+
+  const conceptPreview = reroute.status === "done" ? previewFor(reroute.result?.runId, reroute.territoryId) : undefined;
 
   const evidenceIds = useMemo(() => {
     if (!reroute.result || !result) return [];
@@ -247,6 +255,14 @@ export default function Home() {
                   error={reroute.error}
                   onPreflightAgain={reroute.result ? () => run(reroute.result!.brief) : undefined}
                 />
+                {conceptPreview && (
+                  <ConceptPreviewButton
+                    onClick={() => {
+                      setPreviewNonce((n) => n + 1);
+                      setPreviewOpen(true);
+                    }}
+                  />
+                )}
               </div>
             </ResultsLayout>
           </motion.div>
@@ -259,6 +275,12 @@ export default function Home() {
         onClose={() => setSelectedId(null)}
       />
       <HowItWorks open={howOpen} onClose={() => setHowOpen(false)} />
+      <ConceptPreviewModal
+        preview={conceptPreview}
+        open={previewOpen && Boolean(conceptPreview)}
+        onClose={closePreview}
+        nonce={previewNonce}
+      />
     </main>
   );
 }
